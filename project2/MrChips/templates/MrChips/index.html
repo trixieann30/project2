@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Chips Calculator</title>
+    <!-- Use Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen font-sans p-4">
+
+    <!-- Calculator Container -->
+    <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+
+        <!-- Display Screen -->
+        <div class="bg-gray-700 rounded-lg p-4 text-right mb-4">
+            <div id="previous-operand" class="text-gray-400 text-xl overflow-hidden whitespace-nowrap"></div>
+            <div id="current-operand" class="text-white text-4xl font-bold overflow-hidden whitespace-nowrap">0</div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="calculator-grid">
+            <button data-operator class="col-span-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 rounded-full transition duration-200">AC</button>
+            <button data-operator class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 rounded-full transition duration-200">/</button>
+            <button data-operator class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 rounded-full transition duration-200">*</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">7</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">8</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">9</button>
+            <button data-operator class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 rounded-full transition duration-200">-</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">4</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">5</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">6</button>
+            <button data-operator class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 rounded-full transition duration-200">+</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">1</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">2</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">3</button>
+            <button data-equals class="row-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-full transition duration-200">=</button>
+            <button data-number class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">0</button>
+            <button data-decimal class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-4 rounded-full transition duration-200">.</button>
+        </div>
+    </div>
+
+    <!-- JavaScript for Calculator Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentOperandTextElement = document.getElementById('current-operand');
+            const previousOperandTextElement = document.getElementById('previous-operand');
+            const numberButtons = document.querySelectorAll('[data-number]');
+            const operatorButtons = document.querySelectorAll('[data-operator]');
+            const equalsButton = document.querySelector('[data-equals]');
+            const decimalButton = document.querySelector('[data-decimal]');
+
+            let currentOperand = '';
+            let previousOperand = '';
+            let operation = undefined;
+
+            function clear() {
+                currentOperand = '';
+                previousOperand = '';
+                operation = undefined;
+            }
+
+            function appendNumber(number) {
+                if (number === '.' && currentOperand.includes('.')) return;
+                currentOperand = currentOperand.toString() + number.toString();
+            }
+
+            function chooseOperation(selectedOperation) {
+                if (currentOperand === '') return;
+                if (previousOperand !== '') {
+                    compute();
+                }
+                operation = selectedOperation;
+                previousOperand = currentOperand;
+                currentOperand = '';
+            }
+
+            function compute() {
+                let computation;
+                const prev = parseFloat(previousOperand);
+                const current = parseFloat(currentOperand);
+                if (isNaN(prev) || isNaN(current)) return;
+                switch (operation) {
+                    case '+':
+                        computation = prev + current;
+                        break;
+                    case '-':
+                        computation = prev - current;
+                        break;
+                    case '*':
+                        computation = prev * current;
+                        break;
+                    case '/':
+                        computation = prev / current;
+                        break;
+                    case 'AC': // Clear logic
+                        clear();
+                        break;
+                    default:
+                        return;
+                }
+                currentOperand = computation;
+                operation = undefined;
+                previousOperand = '';
+            }
+
+            function updateDisplay() {
+                currentOperandTextElement.innerText = currentOperand;
+                if (operation != null) {
+                    previousOperandTextElement.innerText = `${previousOperand} ${operation}`;
+                } else {
+                    previousOperandTextElement.innerText = '';
+                }
+            }
+
+            numberButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    appendNumber(button.innerText);
+                    updateDisplay();
+                });
+            });
+
+            operatorButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (button.innerText === 'AC') {
+                        clear();
+                        updateDisplay();
+                    } else {
+                        chooseOperation(button.innerText);
+                        updateDisplay();
+                    }
+                });
+            });
+
+            equalsButton.addEventListener('click', () => {
+                compute();
+                updateDisplay();
+            });
+
+            decimalButton.addEventListener('click', () => {
+                appendNumber('.');
+                updateDisplay();
+            });
+
+            // Initial display update
+            updateDisplay();
+        });
+    </script>
+
+</body>
+</html>
